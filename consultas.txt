@@ -1,0 +1,86 @@
+-- 1. Recupere todos los empleados cuyo sexo sea femenino.
+SELECT * FROM empleados WHERE sexo = 'F';
+
+-- 2. Liste todos los proyectos ubicados en “Madrid”.
+SELECT nombrepr FROM proyectos WHERE lugarp = 'Madrid';
+
+-- INSERT INTO empleados (nombrep, inic, apellido, nss, fechan, dirección, sexo, salario, nsssuper, nd)
+VALUES (
+    'Miguel', 'A', 'González', '555555555', '15-Jun-1980', 'Calle Principal 123 Madrid', 'M', 35000, '333445555', 5
+);
+-- INSERT INTO proyectos (nombrepr, numerop, lugarp, numd)
+VALUES ('Proyecto en Madrid', 100, 'Madrid', 1);
+
+-- 3. Muestre los empleados con salario igual o superior a 30000 y trabajen en el departamento de “Investigación”.
+SELECT * FROM empleados
+WHERE salario >= 30000 AND nd = (SELECT numerod FROM departamentos WHERE nombred = 'Investigacion');
+
+-- 4. Recupere los siguientes datos de empleado: nombre, apellido, fecha de nacimiento, sexo y salario.
+SELECT nombrep, apellido, fechan, sexo, salario FROM empleados;
+
+-- 5. De la relación DEPENDIENTE, muestre el nombre del subordinado y el sexo.
+SELECT nombre_dependiente, sexo FROM dependientes;
+
+-- 6. Recupere el nombre del departamento de todos los empleados de sexo masculino y salario menor a 45000.
+SELECT d.nombred
+FROM empleados AS e
+JOIN departamentos AS d ON e.nd = d.numerod
+WHERE e.sexo = 'M' AND e.salario < 45000;
+
+-- 7. Recupere los nombres de todos los empleados del apartamento 5 que trabajan más de 10 horas por semana en el proyecto de “ProductoX”.
+SELECT e.nombrep
+FROM empleados AS e
+JOIN trabaja_en AS t ON e.nss = t.nsse
+JOIN proyectos AS p ON t.nump = p.numerop
+WHERE e.nd = 5 AND p.nombrepr = 'ProductoX' AND t.horas > 10;
+
+-- 8. Enumere los nombres de todos los empleados que tienen un subordinado con el mismo nombre.
+SELECT e1.nombrep
+FROM empleados AS e1
+WHERE e1.nss IN (SELECT DISTINCT nsse FROM dependientes WHERE nombre_dependiente = e1.nombrep);
+
+-- 9. Localice los nombres de todos los empleados que están supervisados directamente por “Alberto Campos”.
+SELECT e.nombrep
+FROM empleados AS e
+WHERE e.nsssuper IN (SELECT nss FROM empleados WHERE nombrep = 'Alberto' AND apellido = 'Campos');
+
+-- 10. Por cada proyecto, enumere su nombre y el número total de horas semanales (de todos los empleados) dedicadas al mismo.
+SELECT p.nombrepr, SUM(te.horas) AS total_horas
+FROM proyectos AS p
+LEFT JOIN trabaja_en AS te ON p.numerop = te.nump
+GROUP BY p.numerop, p.nombrepr;
+
+-- 11. Recupere los nombres de todos los empleados que trabajan en cada proyecto.
+SELECT p.nombrepr, e.nombrep
+FROM proyectos AS p
+JOIN trabaja_en AS t ON p.numerop = t.nump
+JOIN empleados AS e ON t.nsse = e.nss
+ORDER BY p.nombrepr, e.nombrep;
+
+-- 12. Recupere los nombres de todos los empleados que no trabajan en ningún proyecto.
+SELECT nombrep
+FROM empleados
+WHERE nss NOT IN (SELECT DISTINCT nsse FROM trabaja_en);
+
+-- 13. Por cada departamento, recupere su nombre y el salario medio de todos los empleados que trabajan en él.
+SELECT d.nombred, AVG(e.salario) AS salario_medio
+FROM departamentos AS d
+LEFT JOIN empleados AS e ON d.numerod = e.nd
+GROUP BY d.numerod, d.nombred;
+
+-- 14. Recupere el salario medio de todas las empleadas.
+SELECT AVG(salario) AS salario_medio
+FROM empleados
+WHERE sexo = 'F';
+
+-- 15. Busque los nombres y las direcciones de todos los empleados que trabajan en un proyecto localizado en Madrid.
+SELECT e.nombrep, e.dirección
+FROM empleados AS e
+JOIN trabaja_en AS t ON e.nss = t.nsse
+JOIN proyectos AS p ON t.nump = p.numerop
+WHERE p.lugarp = 'Madrid';
+
+-- 16. Liste los apellidos de todos los directores de departamento que tengan subordinados.
+SELECT e.apellido
+FROM empleados AS e
+WHERE e.nss IN (SELECT DISTINCT nsssuper FROM empleados WHERE nsssuper IS NOT NULL);
